@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>195 Plates</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a passport-ledger. Sticky control bar, dense card grid, ink + stamp palette. */
+:root{
+  --bg:#f1f3f2; --paper:#ffffff; --ink:#15231d; --ink-2:#4a5a53; --line:#d3dad6;
+  --stamp:#1e4d9b; --stamp-soft:#e3ebf8; --done:#9a2b17; --done-soft:#f7e6e1;--vg-bg:#dcefdc;--vg-fg:#1e5c22;--v-bg:#e3f0d9;--v-fg:#3a5a12;--p-bg:#dbeaf3;--p-fg:#1d4e6b;--m-bg:#f0e4df;--m-fg:#6b3a2a;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121816; --paper:#1a221f; --ink:#e8ece9; --ink-2:#a4b0aa; --line:#2b3733;
+  --vg-bg:#1f3a22;--vg-fg:#a9dba9;--v-bg:#2a3a1c;--v-fg:#bfd99a;--p-bg:#1c3140;--p-fg:#9cc8e6;--m-bg:#3d2a22;--m-fg:#e0b4a2;--stamp:#7ea6e6; --stamp-soft:#1d2a3d; --done:#e6836d; --done-soft:#3a1f19; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121816; --paper:#1a221f; --ink:#e8ece9; --ink-2:#a4b0aa; --line:#2b3733;
+  --vg-bg:#1f3a22;--vg-fg:#a9dba9;--v-bg:#2a3a1c;--v-fg:#bfd99a;--p-bg:#1c3140;--p-fg:#9cc8e6;--m-bg:#3d2a22;--m-fg:#e0b4a2;--stamp:#7ea6e6; --stamp-soft:#1d2a3d; --done:#e6836d; --done-soft:#3a1f19; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+a{color:var(--stamp);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto}
+
+header.hero{display:grid;grid-template-columns:1fr auto;gap:20px 32px;align-items:end;padding-block:32px 20px;border-bottom:2px solid var(--ink)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,6vw,64px);line-height:.95;margin:0;letter-spacing:-.02em;text-wrap:balance}
+h1 small{display:block;font-size:.3em;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin-bottom:10px}
+.lede{max-width:60ch;color:var(--ink-2);margin:12px 0 0}
+.stats{display:grid;grid-template-columns:repeat(4,auto);gap:6px 28px;font-variant-numeric:tabular-nums}
+.stat b{font-family:var(--display);font-size:30px;font-weight:700;display:block;line-height:1}
+.stat span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;grid-column:1/-1;margin-top:6px}
+.bar i{display:block;height:100%;width:0;background:var(--done);transition:width .4s}
+
+.controls{position:sticky;top:0;z-index:5;background:var(--bg);padding-block:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--line)}
+.controls input[type=search]{flex:1 1 220px;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);font:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--paper);cursor:pointer;font-size:13px}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink-2);cursor:pointer}
+.views{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-left:auto}
+.views button{padding:7px 14px;border:0;background:var(--paper);cursor:pointer;font-size:13px}
+.views button[aria-pressed=true]{background:var(--stamp);color:#fff}
+
+.dietbar{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding-top:4px}
+.dietbar .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-right:2px}
+.chip.avoid[aria-pressed=true]{background:var(--done);border-color:var(--done);color:#fff;text-decoration:line-through}
+.diet{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:12px}
+.pill{padding:2px 8px;border-radius:999px;font-weight:600;font-size:11px;letter-spacing:.04em}
+.pill.vg{background:var(--vg-bg);color:var(--vg-fg)}.pill.v{background:var(--v-bg);color:var(--v-fg)}.pill.p{background:var(--p-bg);color:var(--p-fg)}.pill.m{background:var(--m-bg);color:var(--m-fg)}
+.al{padding:2px 7px;border:1px solid var(--line);border-radius:4px;color:var(--ink-2);font-family:var(--mono);font-size:11px}
+.al.none{border-style:dashed}
+.note{flex-basis:100%;color:var(--ink-2);font-size:12px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin:14px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-width:0;position:relative}
+.card.done{border-color:var(--done)}
+.thumb{aspect-ratio:16/10;max-width:100%;background:var(--stamp-soft);position:relative;overflow:hidden}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .3s}
+.thumb img.ok{opacity:1}
+.thumb .ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-2);padding:12px}
+.thumb .ph b{display:block;font-size:34px;line-height:1;margin-bottom:8px}
+.thumb.ok .ph{display:none}
+.thumb .wk{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:11px;background:var(--paper);color:var(--ink);padding:2px 7px;border-radius:4px;border:1px solid var(--line)}
+.cap{display:flex;gap:8px;align-items:center}
+.cap .flag{font-size:22px;line-height:1}
+.stamp{position:absolute;right:10px;top:10px;transform:rotate(-8deg);border:2px solid var(--done);color:var(--done);font-family:var(--mono);font-size:11px;letter-spacing:.14em;padding:3px 8px;border-radius:4px;background:var(--done-soft);text-transform:uppercase}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.region{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.country{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.15;margin:0}
+.dish{font-size:16px;font-weight:600;line-height:1.3}
+.dish a{color:var(--ink)}
+.alts{font-size:13px;color:var(--ink-2);line-height:1.5}
+.alts a{color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--line)}
+.extract{font-size:13px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:0}
+.foot{display:flex;gap:8px;align-items:center;margin-top:auto;padding-top:8px;flex-wrap:wrap}
+.btn{padding:6px 11px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer;font-size:13px;white-space:nowrap}
+.btn.primary{background:var(--stamp);border-color:var(--stamp);color:#fff}
+.btn.primary:hover{text-decoration:none;filter:brightness(1.08)}
+.cook{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;color:var(--ink-2)}
+.cook input{accent-color:var(--done);width:16px;height:16px}
+
+.plan{display:grid;gap:12px}
+.planbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:13px;color:var(--ink-2);padding:12px 14px;background:var(--paper);border:1px solid var(--line);border-radius:8px}
+.planbar input[type=date]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.week{padding:18px 0 22px;border-bottom:1px solid var(--line)}
+.week.now .wkhead{background:var(--stamp-soft);border-left:4px solid var(--stamp)}
+.wkhead{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;padding:8px 12px;margin-bottom:12px;border-left:4px solid var(--ink)}
+.wkhead b{font-family:var(--display);font-size:22px;line-height:1}
+.wkhead span{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.wkhead .now-tag{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stamp)}
+.week .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-2);max-width:70ch}
+@media (max-width:720px){header.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.week{grid-template-columns:1fr}.views{margin-left:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <div>
+    <h1><small>One year · 195 countries · 3–4 nights a week</small>195 Plates</h1>
+    <p class="lede">Every independent state recognized by the U.S. State Department, each with its signature dish and one or two runners-up. Tap a dish for the Wikipedia entry, hit <b>Recipe</b> to go cook it, and stamp the card when it's done. Photos load live from Wikipedia.</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="sTotal">195</b><span>countries</span></div>
+    <div class="stat"><b id="sDone">0</b><span>cooked</span></div>
+    <div class="stat"><b id="sPace">3.75</b><span>per week needed</span></div>
+    <div class="stat"><b id="sWeek">—</b><span>week of plan</span></div>
+    <div class="bar"><i id="bar"></i></div>
+  </div>
+</header>
+
+<div class="controls">
+  <input type="search" id="q" placeholder="Search country or dish…" aria-label="Search">
+  <div class="chips" id="chips"></div>
+  <label class="toggle"><input type="checkbox" id="hideDone"> hide cooked</label>
+  <div class="views" role="tablist">
+    <button id="vPlan" aria-pressed="true">52-week plan</button>
+    <button id="vCountries" aria-pressed="false">Countries</button>
+  </div>
+  <div class="dietbar">
+    <span class="lbl">Diet</span>
+    <div class="chips" id="dietChips"></div>
+    <span class="lbl">Avoid</span>
+    <div class="chips" id="avoidChips"></div>
+  </div>
+</div>
+
+<div id="viewCountries" hidden>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="viewPlan">
+  <div class="planbar">
+    <label>Plan starts <input type="date" id="start"></label>
+    <span>Weeks 1–39 have four meals, 40–52 have three. Regions are mixed every week so you never do five Balkan stews in a row.</span>
+    <button class="btn" id="reshuffle">Reshuffle order</button>
+  </div>
+  <div class="plan" id="plan"></div>
+</div>
+
+<footer>Country list: U.S. Department of State, <i>Independent States in the World</i> (193 UN members plus the Holy See and Kosovo). "Signature dish" means the dish most commonly treated as the national or everyday staple; alternates are listed where a country has more than one strong claim. Images and blurbs are fetched from Wikipedia at view time and belong to their respective authors. Your cooked list is saved in this browser only. Diet and allergen tags describe the primary dish as traditionally made and are a starting point, not a guarantee: recipes vary, so check the one you actually use.</footer>
+</div>
+
+<script>
+// [iso2, name, region, [[dish, wikiTitle?], ...]]  — first dish is the one to cook
+const DATA=[
+// Africa
+["DZ","Algeria","Africa",[["Couscous"],["Chakhchoukha"],["Shakshouka"]]],
+["AO","Angola","Africa",[["Muamba de galinha"],["Funge","Funje"],["Calulu"]]],
+["BJ","Benin","Africa",[["Kuli-kuli"],["Akara"]]],
+["BW","Botswana","Africa",[["Seswaa"],["Bogobe"],["Morogo"]]],
+["BF","Burkina Faso","Africa",[["Riz gras"],["Tô"]]],
+["BI","Burundi","Africa",[["Bugali","Ugali"],["Brochettes","Shish kebab"]]],
+["CV","Cabo Verde","Africa",[["Cachupa"]]],
+["CM","Cameroon","Africa",[["Ndolé"],["Poulet DG"],["Eru","Eru (dish)"]]],
+["CF","Central African Republic","Africa",[["Chikwangue"],["Fufu"]]],
+["TD","Chad","Africa",[["Daraba","Chadian cuisine"],["Jarret de bœuf","Chadian cuisine"]]],
+["KM","Comoros","Africa",[["Langouste à la vanille","Spiny lobster"],["Mkatra foutra","Comorian cuisine"]]],
+["CG","Congo (Brazzaville)","Africa",[["Poulet moambe","Moambe"],["Saka saka"]]],
+["CD","Congo (Kinshasa)","Africa",[["Poulet à la moambe","Moambe chicken"],["Pondu","Saka saka"],["Fufu"]]],
+["CI","Côte d'Ivoire","Africa",[["Attiéké"],["Kedjenou"],["Alloco"]]],
+["DJ","Djibouti","Africa",[["Skoudehkaris","Bariis iskukaris"],["Fah-fah","Djiboutian cuisine"]]],
+["EG","Egypt","Africa",[["Koshary"],["Ful medames"],["Molokhia","Mulukhiyah"]]],
+["GQ","Equatorial Guinea","Africa",[["Pepper soup"],["Sopa de pescado","Fish soup"]]],
+["ER","Eritrea","Africa",[["Zigni"],["Injera"]]],
+["SZ","Eswatini","Africa",[["Sishwala","Ugali"],["Umncweba","Biltong"]]],
+["ET","Ethiopia","Africa",[["Doro wat"],["Injera"],["Tibs"]]],
+["GA","Gabon","Africa",[["Poulet nyembwe","Gabonese cuisine"],["Odika","Moambe"]]],
+["GM","Gambia","Africa",[["Domoda"],["Benachin","Jollof rice"],["Yassa","Yassa (food)"]]],
+["GH","Ghana","Africa",[["Jollof rice"],["Waakye"],["Banku"]]],
+["GN","Guinea","Africa",[["Poulet yassa","Yassa (food)"],["Maafe"]]],
+["GW","Guinea-Bissau","Africa",[["Caldo de mancarra","Bissau-Guinean cuisine"],["Jollof rice"]]],
+["KE","Kenya","Africa",[["Nyama choma"],["Ugali"],["Sukuma wiki"]]],
+["LS","Lesotho","Africa",[["Papa","Pap (food)"],["Moroho","Morogo"]]],
+["LR","Liberia","Africa",[["Pepper soup"],["Jollof rice"],["Fufu"]]],
+["LY","Libya","Africa",[["Bazeen"],["Couscous"],["Usban","Osban"]]],
+["MG","Madagascar","Africa",[["Romazava"],["Ravitoto"],["Koba","Koba (food)"]]],
+["MW","Malawi","Africa",[["Nsima"],["Chambo"]]],
+["ML","Mali","Africa",[["Maafe"],["Tiguadège na","Maafe"],["Jollof rice"]]],
+["MR","Mauritania","Africa",[["Thieboudienne"],["Méchoui","Mechoui"]]],
+["MU","Mauritius","Africa",[["Dholl puri","Dal puri"],["Rougaille","Rougail"],["Boulettes","Boulette (food)"]]],
+["MA","Morocco","Africa",[["Tagine"],["Couscous"],["Pastilla"]]],
+["MZ","Mozambique","Africa",[["Matapa"],["Piri-piri chicken","Piri piri"]]],
+["NA","Namibia","Africa",[["Kapana","Namibian cuisine"],["Potjiekos"]]],
+["NE","Niger","Africa",[["Kilishi"],["Dambou"]]],
+["NG","Nigeria","Africa",[["Jollof rice"],["Egusi soup","Egusi"],["Suya"]]],
+["RW","Rwanda","Africa",[["Brochettes","Shish kebab"],["Isombe"],["Ugali"]]],
+["ST","São Tomé and Príncipe","Africa",[["Calulu"]]],
+["SN","Senegal","Africa",[["Thieboudienne"],["Yassa","Yassa (food)"],["Maafe"]]],
+["SC","Seychelles","Africa",[["Ladob","Seychellois cuisine"],["Octopus curry","Curry"]]],
+["SL","Sierra Leone","Africa",[["Cassava leaf stew","Saka saka"],["Jollof rice"]]],
+["SO","Somalia","Africa",[["Bariis iskukaris"],["Canjeero"],["Suqaar"]]],
+["ZA","South Africa","Africa",[["Bobotie"],["Bunny chow"],["Boerewors"]]],
+["SS","South Sudan","Africa",[["Kisra"],["Asida"]]],
+["SD","Sudan","Africa",[["Ful medames"],["Kisra"],["Asida"]]],
+["TZ","Tanzania","Africa",[["Ugali"],["Nyama choma"],["Zanzibar pizza"]]],
+["TG","Togo","Africa",[["Fufu"],["Pâte","Tô"]]],
+["TN","Tunisia","Africa",[["Couscous"],["Brik"],["Lablabi"]]],
+["UG","Uganda","Africa",[["Matoke"],["Rolex","Rolex (food)"],["Luwombo"]]],
+["ZM","Zambia","Africa",[["Nshima"],["Ifisashi"]]],
+["ZW","Zimbabwe","Africa",[["Sadza"],["Nyama","Nyama choma"]]],
+// Asia & Middle East
+["AF","Afghanistan","Asia",[["Kabuli palaw"],["Mantu","Mantu (food)"],["Bolani"]]],
+["AM","Armenia","Asia",[["Khorovats"],["Dolma"],["Lavash"]]],
+["AZ","Azerbaijan","Asia",[["Plov","Pilaf"],["Dolma"],["Qutab"]]],
+["BH","Bahrain","Asia",[["Machboos"],["Muhammar"]]],
+["BD","Bangladesh","Asia",[["Shorshe ilish"],["Kacchi biryani"],["Bhuna khichuri","Khichdi"]]],
+["BT","Bhutan","Asia",[["Ema datshi"],["Jasha maru"],["Red rice","Bhutanese red rice"]]],
+["BN","Brunei","Asia",[["Ambuyat"],["Nasi katok"]]],
+["KH","Cambodia","Asia",[["Fish amok","Amok (dish)"],["Num banh chok"],["Lok lak","Shaking beef"]]],
+["CN","China","Asia",[["Peking duck"],["Mapo tofu"],["Jiaozi"]]],
+["GE","Georgia","Asia",[["Khachapuri"],["Khinkali"],["Chakapuli"]]],
+["IN","India","Asia",[["Butter chicken"],["Biryani"],["Masala dosa"]]],
+["ID","Indonesia","Asia",[["Nasi goreng"],["Rendang"],["Satay"]]],
+["IR","Iran","Asia",[["Ghormeh sabzi"],["Chelow kabab"],["Fesenjān"]]],
+["IQ","Iraq","Asia",[["Masgouf"],["Dolma"],["Kubba","Kibbeh"]]],
+["IL","Israel","Asia",[["Shakshouka"],["Falafel"],["Sabich"]]],
+["JP","Japan","Asia",[["Sushi"],["Ramen"],["Okonomiyaki"]]],
+["JO","Jordan","Asia",[["Mansaf"],["Maqluba"],["Falafel"]]],
+["KZ","Kazakhstan","Asia",[["Beshbarmak"],["Kazy"],["Baursak"]]],
+["KW","Kuwait","Asia",[["Machboos"],["Mutabbaq samak"]]],
+["KG","Kyrgyzstan","Asia",[["Beshbarmak"],["Laghman"],["Plov","Pilaf"]]],
+["LA","Laos","Asia",[["Larb"],["Tam mak hoong","Green papaya salad"],["Khao piak sen"]]],
+["LB","Lebanon","Asia",[["Tabbouleh"],["Kibbeh"],["Hummus"]]],
+["MY","Malaysia","Asia",[["Nasi lemak"],["Laksa"],["Rendang"]]],
+["MV","Maldives","Asia",[["Garudhiya"],["Mas huni"]]],
+["MN","Mongolia","Asia",[["Buuz"],["Khorkhog"],["Tsuivan"]]],
+["MM","Myanmar","Asia",[["Mohinga"],["Lahpet thoke","Lahpet"],["Shan noodles"]]],
+["NP","Nepal","Asia",[["Dal bhat","Dal"],["Momo","Momo (food)"],["Sel roti"]]],
+["KP","North Korea","Asia",[["Pyongyang naengmyeon","Naengmyeon"],["Kimchi"]]],
+["OM","Oman","Asia",[["Shuwa","Omani cuisine"],["Majboos","Kabsa"]]],
+["PK","Pakistan","Asia",[["Nihari"],["Biryani","Sindhi biryani"],["Karahi"]]],
+["PH","Philippines","Asia",[["Adobo","Philippine adobo"],["Sinigang"],["Lechon"]]],
+["QA","Qatar","Asia",[["Machboos"],["Harees"],["Luqaimat"]]],
+["SA","Saudi Arabia","Asia",[["Kabsa"],["Mandi","Mandi (food)"],["Jareesh"]]],
+["SG","Singapore","Asia",[["Hainanese chicken rice"],["Chili crab"],["Laksa"]]],
+["KR","South Korea","Asia",[["Bibimbap"],["Kimchi jjigae"],["Bulgogi"]]],
+["LK","Sri Lanka","Asia",[["Rice and curry","Rice and curry (Sri Lanka)"],["Kottu"],["Hoppers","Appam"]]],
+["SY","Syria","Asia",[["Kibbeh"],["Fattoush"],["Shawarma"]]],
+["TJ","Tajikistan","Asia",[["Qurutob"],["Plov","Pilaf"],["Sambusa","Samosa"]]],
+["TH","Thailand","Asia",[["Pad thai"],["Tom yum"],["Green curry"]]],
+["TL","Timor-Leste","Asia",[["Ikan pepes","Pepes"],["Batar da'an"]]],
+["TR","Turkey","Asia",[["Döner kebab"],["Köfte"],["Lahmacun"]]],
+["TM","Turkmenistan","Asia",[["Plov","Pilaf"],["Shurpa"],["Manti"]]],
+["AE","United Arab Emirates","Asia",[["Harees"],["Machboos"],["Luqaimat"]]],
+["UZ","Uzbekistan","Asia",[["Plov (osh)","Pilaf"],["Lagman","Laghman"],["Samsa","Samsa (food)"]]],
+["VN","Vietnam","Asia",[["Phở"],["Bánh mì"],["Bún chả"]]],
+["YE","Yemen","Asia",[["Saltah"],["Mandi","Mandi (food)"],["Fahsa"]]],
+// Europe
+["AL","Albania","Europe",[["Tavë kosi"],["Byrek"],["Fërgesë"]]],
+["AD","Andorra","Europe",[["Escudella","Escudella i carn d'olla"],["Trinxat"]]],
+["AT","Austria","Europe",[["Wiener schnitzel"],["Tafelspitz"],["Apfelstrudel"]]],
+["BY","Belarus","Europe",[["Draniki"],["Machanka"],["Kolduny"]]],
+["BE","Belgium","Europe",[["Moules-frites"],["Carbonnade flamande","Carbonade flamande"],["Waterzooi"]]],
+["BA","Bosnia and Herzegovina","Europe",[["Ćevapi"],["Burek"],["Bosanski lonac"]]],
+["BG","Bulgaria","Europe",[["Shopska salad"],["Banitsa"],["Tarator"]]],
+["HR","Croatia","Europe",[["Peka","Croatian cuisine"],["Pašticada"],["Sarma","Stuffed leaves"]]],
+["CY","Cyprus","Europe",[["Halloumi"],["Souvla"],["Kleftiko"]]],
+["CZ","Czechia","Europe",[["Svíčková"],["Vepřo knedlo zelo"],["Guláš","Goulash"]]],
+["DK","Denmark","Europe",[["Smørrebrød"],["Frikadeller"],["Stegt flæsk"]]],
+["EE","Estonia","Europe",[["Verivorst"],["Mulgipuder"],["Kiluvõileib"]]],
+["FI","Finland","Europe",[["Karjalanpaisti","Karelian hot pot"],["Lohikeitto"],["Karjalanpiirakka","Karelian pasty"]]],
+["FR","France","Europe",[["Coq au vin"],["Bœuf bourguignon","Beef bourguignon"],["Ratatouille"]]],
+["DE","Germany","Europe",[["Sauerbraten"],["Schnitzel"],["Bratwurst"]]],
+["GR","Greece","Europe",[["Moussaka"],["Souvlaki"],["Spanakopita"]]],
+["VA","Holy See","Europe",[["Cacio e pepe"],["Saltimbocca"]]],
+["HU","Hungary","Europe",[["Goulash"],["Chicken paprikash","Paprikash"],["Lángos"]]],
+["IS","Iceland","Europe",[["Plokkfiskur","Icelandic cuisine"],["Kjötsúpa"],["Skyr"]]],
+["IE","Ireland","Europe",[["Irish stew"],["Colcannon"],["Boxty"]]],
+["IT","Italy","Europe",[["Pizza","Neapolitan pizza"],["Carbonara"],["Risotto"]]],
+["XK","Kosovo","Europe",[["Flija"],["Pite","Byrek"],["Tavë kosi"]]],
+["LV","Latvia","Europe",[["Grey peas with bacon","Grey peas"],["Sklandrausis"],["Rupjmaize"]]],
+["LI","Liechtenstein","Europe",[["Käsknöpfle"],["Ribel"]]],
+["LT","Lithuania","Europe",[["Cepelinai"],["Šaltibarščiai"],["Kugelis"]]],
+["LU","Luxembourg","Europe",[["Judd mat Gaardebounen"],["Bouneschlupp"],["Gromperekichelcher"]]],
+["MT","Malta","Europe",[["Stuffat tal-fenek","Rabbit stew"],["Pastizzi"],["Ftira"]]],
+["MD","Moldova","Europe",[["Mămăligă"],["Zeamă"],["Plăcintă"]]],
+["MC","Monaco","Europe",[["Barbagiuan","Barbajuan"],["Socca"]]],
+["ME","Montenegro","Europe",[["Kačamak"],["Njeguški pršut"],["Cicvara"]]],
+["NL","Netherlands","Europe",[["Stamppot"],["Bitterballen"],["Erwtensoep"]]],
+["MK","North Macedonia","Europe",[["Tavče gravče"],["Ajvar"],["Pastrmajlija"]]],
+["NO","Norway","Europe",[["Fårikål"],["Kjøttkaker"],["Lutefisk"]]],
+["PL","Poland","Europe",[["Pierogi"],["Bigos"],["Żurek"]]],
+["PT","Portugal","Europe",[["Bacalhau à Brás"],["Caldo verde"],["Francesinha"]]],
+["RO","Romania","Europe",[["Sarmale","Stuffed leaves"],["Mici"],["Mămăligă"]]],
+["RU","Russia","Europe",[["Borscht"],["Pelmeni"],["Beef Stroganoff"]]],
+["SM","San Marino","Europe",[["Torta Tre Monti"],["Piadina"]]],
+["RS","Serbia","Europe",[["Ćevapi"],["Sarma","Stuffed leaves"],["Karađorđeva šnicla"]]],
+["SK","Slovakia","Europe",[["Bryndzové halušky"],["Kapustnica"],["Lokše"]]],
+["SI","Slovenia","Europe",[["Kranjska klobasa"],["Štruklji"],["Jota","Jota (food)"]]],
+["ES","Spain","Europe",[["Paella"],["Tortilla española","Spanish omelette"],["Gazpacho"]]],
+["SE","Sweden","Europe",[["Köttbullar","Swedish cuisine"],["Gravlax"],["Janssons frestelse"]]],
+["CH","Switzerland","Europe",[["Fondue"],["Rösti"],["Raclette"]]],
+["UA","Ukraine","Europe",[["Borscht"],["Varenyky"],["Chicken Kyiv"]]],
+["GB","United Kingdom","Europe",[["Fish and chips"],["Sunday roast"],["Chicken tikka masala"]]],
+// Americas
+["AG","Antigua and Barbuda","Americas",[["Fungee and pepperpot","Cou-cou"],["Ducana"]]],
+["AR","Argentina","Americas",[["Asado"],["Empanada"],["Milanesa"]]],
+["BS","Bahamas","Americas",[["Cracked conch","Conch"],["Peas and rice","Rice and peas"]]],
+["BB","Barbados","Americas",[["Cou-cou and flying fish","Cou-cou"],["Macaroni pie"]]],
+["BZ","Belize","Americas",[["Rice and beans"],["Fry jacks","Fry jack"]]],
+["BO","Bolivia","Americas",[["Salteña"],["Pique macho"],["Silpancho"]]],
+["BR","Brazil","Americas",[["Feijoada"],["Moqueca"],["Pão de queijo"]]],
+["CA","Canada","Americas",[["Poutine"],["Tourtière"],["Butter tart"]]],
+["CL","Chile","Americas",[["Pastel de choclo"],["Empanada"],["Cazuela"]]],
+["CO","Colombia","Americas",[["Bandeja paisa"],["Ajiaco"],["Arepa"]]],
+["CR","Costa Rica","Americas",[["Gallo pinto"],["Casado"],["Olla de carne"]]],
+["CU","Cuba","Americas",[["Ropa vieja"],["Arroz con pollo"],["Cuban sandwich"]]],
+["DM","Dominica","Americas",[["Callaloo"],["Bakes","Johnnycake"]]],
+["DO","Dominican Republic","Americas",[["La Bandera","Dominican Republic cuisine"],["Sancocho"],["Mangú"]]],
+["EC","Ecuador","Americas",[["Encebollado"],["Ceviche"],["Llapingacho"]]],
+["SV","El Salvador","Americas",[["Pupusa"],["Sopa de pata"]]],
+["GD","Grenada","Americas",[["Oil down"],["Callaloo"]]],
+["GT","Guatemala","Americas",[["Pepián"],["Kak'ik"],["Jocón"]]],
+["GY","Guyana","Americas",[["Pepperpot","Guyanese pepperpot"],["Cook-up rice"],["Roti"]]],
+["HT","Haiti","Americas",[["Griot","Griot (food)"],["Soup joumou"],["Diri ak djon djon"]]],
+["HN","Honduras","Americas",[["Baleada"],["Sopa de caracol"],["Plato típico"]]],
+["JM","Jamaica","Americas",[["Jerk chicken","Jerk (cooking)"],["Ackee and saltfish"],["Curry goat"]]],
+["MX","Mexico","Americas",[["Tacos al pastor","Al pastor"],["Mole poblano","Mole (sauce)"],["Chiles en nogada"]]],
+["NI","Nicaragua","Americas",[["Gallo pinto"],["Nacatamal"],["Vigorón"]]],
+["PA","Panama","Americas",[["Sancocho"],["Arroz con pollo"],["Ropa vieja"]]],
+["PY","Paraguay","Americas",[["Sopa paraguaya"],["Chipa"],["Mbeju"]]],
+["PE","Peru","Americas",[["Ceviche"],["Lomo saltado"],["Ají de gallina"]]],
+["KN","Saint Kitts and Nevis","Americas",[["Goat water"],["Stewed saltfish","Dried and salted cod"]]],
+["LC","Saint Lucia","Americas",[["Green fig and saltfish","Dried and salted cod"],["Bouyon","Bouyon (soup)"]]],
+["VC","Saint Vincent and the Grenadines","Americas",[["Roasted breadfruit and jackfish","Breadfruit"],["Callaloo"]]],
+["SR","Suriname","Americas",[["Pom","Pom (dish)"],["Roti"],["Moksi alesi"]]],
+["TT","Trinidad and Tobago","Americas",[["Doubles","Doubles (food)"],["Roti"],["Callaloo"]]],
+["US","United States","Americas",[["Hamburger"],["Barbecue","Barbecue in the United States"],["Macaroni and cheese"]]],
+["UY","Uruguay","Americas",[["Chivito","Chivito (sandwich)"],["Asado"],["Milanesa"]]],
+["VE","Venezuela","Americas",[["Arepa"],["Pabellón criollo"],["Hallaca"]]],
+// Oceania
+["AU","Australia","Oceania",[["Meat pie","Meat pie (Australia and New Zealand)"],["Barbecue","Barbecue in Australia"],["Lamington"]]],
+["FJ","Fiji","Oceania",[["Kokoda","'Ota 'ika"],["Lovo"]]],
+["KI","Kiribati","Oceania",[["Palusami"],["Raw fish salad","Poisson cru"]]],
+["MH","Marshall Islands","Oceania",[["Bwiro","Marshallese cuisine"],["Breadfruit"]]],
+["FM","Micronesia","Oceania",[["Pounded breadfruit","Breadfruit"],["Taro"]]],
+["NR","Nauru","Oceania",[["Coconut fish","Cuisine of Nauru"],["Pandanus","Pandanus tectorius"]]],
+["NZ","New Zealand","Oceania",[["Hāngī","Hāngi"],["Pavlova","Pavlova (dessert)"],["Whitebait fritters","Whitebait"]]],
+["PW","Palau","Oceania",[["Tinola"],["Taro"]]],
+["PG","Papua New Guinea","Oceania",[["Mumu","Papua New Guinean cuisine"],["Sago"],["Kaukau","Sweet potato"]]],
+["WS","Samoa","Oceania",[["Oka i'a","'Ota 'ika"],["Palusami"],["Sapasui"]]],
+["SB","Solomon Islands","Oceania",[["Poi","Poi (Hawaiian food)"],["Cassava pudding","Cassava"]]],
+["TO","Tonga","Oceania",[["ʻOta ʻika","'Ota 'ika"],["Lu pulu"]]],
+["TV","Tuvalu","Oceania",[["Pulaka"],["Palusami"]]],
+["VU","Vanuatu","Oceania",[["Laplap"],["Tuluk"]]]
+];
+
+// Diet + allergens for the PRIMARY dish, as traditionally prepared. iso: [diet, allergenCodes, note?]
+// diet: vg vegan · v vegetarian · p pescatarian · m contains meat
+// codes: G gluten · D dairy · E egg · P peanut · N tree nuts · S shellfish · F fish · Y soy · M sesame
+const DIET={
+DZ:["m","G","Veg version common"],AO:["m",""],BJ:["vg","P"],BW:["m",""],BF:["m",""],BI:["vg",""],CV:["m","","Veg version (cachupa pobre) exists"],CM:["m","PS"],CF:["vg",""],TD:["vg","P"],KM:["p","SD"],CG:["m",""],CD:["m",""],CI:["vg","","Usually served with grilled fish"],DJ:["m",""],EG:["vg","G"],GQ:["m",""],ER:["m",""],SZ:["vg",""],ET:["m","ED"],GA:["m",""],GM:["m","P"],GH:["m","","Vegan without the chicken"],GN:["m",""],GW:["m","P"],KE:["m",""],LS:["vg",""],LR:["m",""],LY:["m","G"],MG:["m",""],MW:["vg",""],ML:["m","P"],MR:["p","F"],MU:["vg","G"],MA:["m","","Veg tagine common; almonds in some"],MZ:["p","PS"],NA:["m",""],NE:["m","P"],NG:["m","","Vegan without the chicken"],RW:["m",""],ST:["p","F"],SN:["p","F"],SC:["vg",""],SL:["m","P"],SO:["m",""],ZA:["m","EDGN"],SS:["vg",""],SD:["vg","","Sesame if tahini added"],TZ:["vg",""],TG:["vg",""],TN:["m","G"],UG:["vg","","Peanut sauce common"],ZM:["vg",""],ZW:["vg",""],
+AF:["m","N"],AM:["m",""],AZ:["m","DN"],BH:["m",""],BD:["p","F"],BT:["v","D"],BN:["p","FS"],KH:["p","FE"],CN:["m","GY"],GE:["v","GDE"],IN:["m","DN"],ID:["m","EYSG","Shrimp paste in sambal"],IR:["m",""],IQ:["p","F"],IL:["v","E"],JP:["p","FSYG"],JO:["m","DGN"],KZ:["m","GE"],KW:["m",""],KG:["m","GE"],LA:["m","F","Fish sauce"],LB:["vg","G"],MY:["p","EFPS"],MV:["p","F"],MN:["m","G"],MM:["p","FE"],NP:["vg",""],KP:["m","GE"],OM:["m",""],PK:["m","G"],PH:["m","YG"],QA:["m",""],SA:["m","N"],SG:["m","YG"],KR:["m","EYMG","Vegetarian without the beef"],LK:["m","F","Veg curries common"],SY:["m","GN"],TJ:["v","GD"],TH:["p","EPFSY"],TL:["p","F"],TR:["m","GD"],TM:["m",""],AE:["m","GD"],UZ:["m",""],VN:["m","F","Fish sauce; rice noodles"],YE:["m","G"],
+AL:["m","DEG"],AD:["m","GE"],AT:["m","GED"],BY:["v","EGD"],BE:["p","SD"],BA:["m","GD"],BG:["v","D"],HR:["m",""],CY:["v","D"],CZ:["m","DGE"],DK:["m","GFED","Many veg toppings"],EE:["m","G"],FI:["m",""],FR:["m","DG"],DE:["m","G"],GR:["m","DEG"],VA:["v","GD"],HU:["m","","Gluten if csipetke added"],IS:["p","FDG"],IE:["m",""],IT:["v","GD"],XK:["v","GD"],LV:["m",""],LI:["v","GED"],LT:["m","D"],LU:["m","DG"],MT:["m",""],MD:["v","D"],MC:["v","GDE"],ME:["v","D"],NL:["m","D","Vegetarian without rookworst"],MK:["vg",""],NO:["m",""],PL:["v","GDE","Ruskie filling; meat fillings exist"],PT:["p","FE"],RO:["m",""],RU:["m","D","Vegetarian version common"],SM:["v","GDEN"],RS:["m","GD"],SK:["m","GDE","Vegetarian without bacon"],SI:["m",""],ES:["m","S","Valenciana (meat) or marisco (shellfish)"],SE:["m","GED"],CH:["v","DG"],UA:["m","D","Vegetarian version common"],GB:["p","FG"],
+AG:["m",""],AR:["m",""],BS:["p","SGE"],BB:["p","FD"],BZ:["m","","Vegan without the stewed chicken"],BO:["m","GE"],BR:["m",""],CA:["m","DG","Gravy is usually meat-based"],CL:["m","ED"],CO:["m","E"],CR:["vg",""],CU:["m",""],DM:["p","S","Crab is traditional; vegan without"],DO:["m",""],EC:["p","F"],SV:["m","D","Cheese-only pupusas are vegetarian"],GD:["m","G"],GT:["m","M"],GY:["m",""],HT:["m",""],HN:["v","GD"],JM:["m",""],MX:["m",""],NI:["vg",""],PA:["m",""],PY:["v","DE"],PE:["p","F"],KN:["m","G"],LC:["p","F"],VC:["p","F"],SR:["m",""],TT:["vg","G"],US:["m","G"],UY:["m","GDE"],VE:["vg","","Fillings vary"],
+AU:["m","G"],FJ:["p","F"],KI:["v","","Often with corned beef"],MH:["vg",""],FM:["vg",""],NR:["p","F"],NZ:["m",""],PW:["m","F"],PG:["m",""],WS:["p","F"],SB:["vg",""],TO:["p","F"],TV:["vg",""],VU:["vg","","Often topped with chicken or pork"]};
+const DIET_LABEL={vg:"Vegan",v:"Vegetarian",p:"Pescatarian",m:"Contains meat"};
+const DIET_RANK={vg:0,v:1,p:2,m:3};
+const ALLERGEN={G:"gluten",D:"dairy",E:"egg",P:"peanut",N:"tree nuts",S:"shellfish",F:"fish",Y:"soy",M:"sesame"};
+
+const REGIONS=["Africa","Asia","Europe","Americas","Oceania"];
+const flag=iso=>iso.split("").map(c=>String.fromCodePoint(0x1F1E6+c.charCodeAt(0)-65)).join("");
+const wiki=t=>"https://en.wikipedia.org/wiki/"+encodeURIComponent(t.replace(/ /g,"_"));
+const recipe=(d,c)=>"https://www.google.com/search?q="+encodeURIComponent(d+" "+c+" recipe");
+
+// ---------- storage (best effort) ----------
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+let done=LS.get("plates.done",{});          // iso -> ISO date
+let seed=LS.get("plates.seed",195);
+let startDate=LS.get("plates.start",null);
+const thumbCache=LS.get("plates.thumbs2",{}); // title -> {src,extract,url}
+
+// ---------- plan ----------
+function rng(s){return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function buildPlan(){
+  const r=rng(seed), byR={};
+  REGIONS.forEach(x=>byR[x]=DATA.filter(c=>c[2]===x).slice().sort(()=>r()-.5));
+  const order=[];let left=DATA.length;
+  while(left){for(const x of REGIONS){if(byR[x].length){order.push(byR[x].shift());left--}}}
+  const weeks=[];let i=0;
+  for(let w=0;w<52;w++){const n=w<39?4:3;weeks.push(order.slice(i,i+n));i+=n}
+  return weeks;
+}
+let PLAN=buildPlan();
+const weekOf={};function indexPlan(){for(const k in weekOf)delete weekOf[k];PLAN.forEach((ws,i)=>ws.forEach(c=>weekOf[c[0]]=i+1))}
+indexPlan();
+
+function currentWeek(){
+  if(!startDate)return null;
+  const d=(Date.now()-new Date(startDate+"T00:00:00").getTime())/864e5;
+  if(d<0)return 0; return Math.min(52,Math.floor(d/7)+1);
+}
+
+// ---------- state ----------
+let region="All", q="", hideDone=false, view="plan", dietMax=null, avoid=new Set();
+
+function stats(){
+  const n=Object.keys(done).length;
+  document.getElementById("sDone").textContent=n;
+  document.getElementById("bar").style.width=(n/DATA.length*100)+"%";
+  const cw=currentWeek();
+  document.getElementById("sWeek").textContent=cw==null?"—":(cw===0?"pre":cw);
+  const remaining=DATA.length-n, wkLeft=cw==null?52:Math.max(1,52-cw+1);
+  document.getElementById("sPace").textContent=(remaining/wkLeft).toFixed(2);
+}
+
+function filtered(){
+  const s=q.trim().toLowerCase();
+  return DATA.filter(c=>(region==="All"||c[2]===region)&&(!hideDone||!done[c[0]])&&passesDiet(c[0])&&
+    (!s||c[1].toLowerCase().includes(s)||c[3].some(d=>d[0].toLowerCase().includes(s))));
+}
+
+// ---------- dish photos from Wikipedia ----------
+// Primary: REST summary over fetch. Fallback: JSONP through the action API (works even where CORS fetch is refused).
+const photo={};            // title -> {src,extract} | {fail:true}
+const pending={};
+function wikiTitle(t){return t.replace(/ /g,"_")}
+function applyPhoto(title){
+  const d=photo[title]; if(!d)return;
+  document.querySelectorAll(`.thumb[data-title="${CSS.escape(title)}"]`).forEach(el=>{
+    const img=el.querySelector("img"), ph=el.querySelector(".ph"), ex=el.closest(".card")?.querySelector(".extract");
+    if(d.src){img.onload=()=>{img.classList.add("ok");el.classList.add("ok")};img.onerror=()=>{ph.lastChild.textContent="photo unavailable"};if(img.src!==d.src)img.src=d.src}
+    else if(ph)ph.lastChild.textContent=d.fail?"photo unavailable":"no photo on Wikipedia";
+    if(ex&&d.extract)ex.textContent=d.extract;
+  });
+}
+function viaFetch(title){
+  return fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(wikiTitle(title)))
+    .then(r=>{if(!r.ok)throw 0;return r.json()})
+    .then(j=>({src:j.thumbnail?j.thumbnail.source.replace(/\?.*$/,""):null,extract:j.extract||""}));
+}
+let jp=0;
+function viaJsonp(title){
+  return new Promise((res,rej)=>{
+    const cb="plates_cb"+(jp++), s=document.createElement("script");
+    window[cb]=j=>{delete window[cb];s.remove();const p=j&&j.query&&Object.values(j.query.pages)[0];
+      if(!p||p.missing)return rej();res({src:p.thumbnail?p.thumbnail.source:null,extract:p.extract||""})};
+    s.onerror=()=>{delete window[cb];s.remove();rej()};
+    s.src="https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=640&exintro=1&explaintext=1&redirects=1&titles="
+      +encodeURIComponent(wikiTitle(title))+"&callback="+cb;
+    document.head.appendChild(s);
+  });
+}
+async function loadPhoto(title){
+  if(photo[title]||pending[title])return;
+  if(thumbCache[title]){photo[title]=thumbCache[title];applyPhoto(title);return}
+  pending[title]=true;
+  let d=null;
+  try{d=await viaFetch(title)}catch{try{d=await viaJsonp(title)}catch{}}
+  photo[title]=d||{fail:true};
+  if(d){thumbCache[title]=d;LS.set("plates.thumbs2",thumbCache)}
+  delete pending[title];applyPhoto(title);
+}
+// Load every primary dish photo up front, a few at a time, so both views are ready.
+(async()=>{
+  const titles=[...new Set(DATA.map(c=>c[3][0][1]||c[3][0][0]))];
+  let i=0;await Promise.all(Array.from({length:6},async()=>{while(i<titles.length)await loadPhoto(titles[i++])}));
+})();
+
+// ---------- diet row ----------
+function dietRow(iso){
+  const d=DIET[iso]; if(!d)return "";
+  const [cls,codes,note]=d;
+  const al=[...codes].map(c=>`<span class="al" title="Contains ${ALLERGEN[c]}">${ALLERGEN[c]}</span>`).join("");
+  return `<div class="diet"><span class="pill ${cls}">${DIET_LABEL[cls]}</span>${al||`<span class="al none">no major allergens</span>`}${note?`<span class="note">${esc(note)}</span>`:""}</div>`;
+}
+function passesDiet(iso){
+  const d=DIET[iso]; if(!d)return true;
+  if(dietMax!=null&&DIET_RANK[d[0]]>dietMax)return false;
+  for(const c of avoid)if(d[1].includes(c))return false;
+  return true;
+}
+
+// ---------- shared card ----------
+function card(c){
+  const [iso,name,reg,dishes]=c, [main,...alts]=dishes, title=main[1]||main[0], isDone=!!done[iso];
+  return `<article class="card ${isDone?"done":""}" data-iso="${iso}">
+    <div class="thumb" data-title="${esc(title)}"><img alt="${esc(main[0])}">
+      <span class="ph"><b>${flag(iso)}</b><span>loading photo…</span></span>
+      <span class="wk">Wk ${weekOf[iso]}</span>${isDone?`<span class="stamp">Cooked ${done[iso]}</span>`:""}</div>
+    <div class="body">
+      <div class="region">${reg}</div>
+      <div class="cap"><span class="flag">${flag(iso)}</span><h2 class="country">${esc(name)}</h2></div>
+      <div class="dish"><a href="${wiki(title)}" target="_blank" rel="noopener">${esc(main[0])}</a></div>
+      ${alts.length?`<div class="alts">Also: ${alts.map(a=>`<a href="${wiki(a[1]||a[0])}" target="_blank" rel="noopener">${esc(a[0])}</a>`).join(" · ")}</div>`:""}
+      <p class="extract"></p>
+      ${dietRow(iso)}
+      <div class="foot">
+        <a class="btn primary" href="${recipe(main[0],name)}" target="_blank" rel="noopener">Recipe</a>
+        <a class="btn" href="${wiki(title)}" target="_blank" rel="noopener">Wikipedia</a>
+        <label class="cook"><input type="checkbox" data-iso="${iso}" ${isDone?"checked":""}> cooked</label>
+      </div>
+    </div></article>`;
+}
+function hydrate(root){root.querySelectorAll(".thumb").forEach(t=>{const ti=t.dataset.title;if(photo[ti])applyPhoto(ti);else loadPhoto(ti)})}
+
+// ---------- render: countries ----------
+function renderCountries(){
+  const list=filtered(), grid=document.getElementById("grid");
+  document.getElementById("count").textContent=`${list.length} of ${DATA.length} countries · ${list.filter(c=>done[c[0]]).length} cooked`;
+  grid.innerHTML=list.map(card).join("");
+  hydrate(grid);
+}
+
+// ---------- render: plan ----------
+function renderPlan(){
+  const cw=currentWeek(), el=document.getElementById("plan"), keep=new Set(filtered().map(c=>c[0]));
+  el.innerHTML=PLAN.map((ws,i)=>{
+    const w=i+1, shown=ws.filter(c=>keep.has(c[0])); if(!shown.length)return "";
+    let dateLabel="";
+    if(startDate){const d=new Date(startDate+"T00:00:00");d.setDate(d.getDate()+i*7);dateLabel=d.toLocaleDateString(undefined,{month:"short",day:"numeric"})}
+    const n=ws.filter(c=>done[c[0]]).length;
+    return `<section class="week ${cw===w?"now":""}"><div class="wkhead"><b>Week ${w}</b><span>${dateLabel?dateLabel+" · ":""}${ws.length} meals · ${n} cooked</span>${cw===w?`<span class="now-tag">this week</span>`:""}</div>
+      <div class="grid">${shown.map(card).join("")}</div></section>`;
+  }).join("");
+  hydrate(el);
+}
+
+function render(){stats();if(view==="countries")renderCountries();else renderPlan()}
+const esc=s=>s.replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+
+// ---------- wiring ----------
+const chips=document.getElementById("chips");
+["All",...REGIONS].forEach(r=>{const b=document.createElement("button");b.className="chip";b.textContent=r;b.setAttribute("aria-pressed",r==="All");
+  b.onclick=()=>{region=r;chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x.textContent===r));render()};chips.appendChild(b)});
+const dc=document.getElementById("dietChips");
+[["Any",null],["Vegan",0],["Vegetarian",1],["Pescatarian",2]].forEach(([l,r])=>{const b=document.createElement("button");b.className="chip";b.textContent=l;b.setAttribute("aria-pressed",r===null);
+  b.onclick=()=>{dietMax=r;dc.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};dc.appendChild(b)});
+const ac=document.getElementById("avoidChips");
+Object.entries(ALLERGEN).forEach(([c,l])=>{const b=document.createElement("button");b.className="chip avoid";b.textContent=l;b.setAttribute("aria-pressed","false");
+  b.onclick=()=>{avoid.has(c)?avoid.delete(c):avoid.add(c);b.setAttribute("aria-pressed",avoid.has(c));render()};ac.appendChild(b)});
+document.getElementById("q").addEventListener("input",e=>{q=e.target.value;render()});
+document.getElementById("hideDone").addEventListener("change",e=>{hideDone=e.target.checked;render()});
+function setView(v){view=v;document.getElementById("viewCountries").hidden=v!=="countries";document.getElementById("viewPlan").hidden=v!=="plan";
+  document.getElementById("vCountries").setAttribute("aria-pressed",v==="countries");document.getElementById("vPlan").setAttribute("aria-pressed",v==="plan");render()}
+document.getElementById("vCountries").onclick=()=>setView("countries");
+document.getElementById("vPlan").onclick=()=>setView("plan");
+document.addEventListener("change",e=>{
+  const iso=e.target.dataset?.iso; if(!iso||e.target.type!=="checkbox")return;
+  if(e.target.checked)done[iso]=new Date().toISOString().slice(0,10); else delete done[iso];
+  LS.set("plates.done",done);render();
+});
+const startEl=document.getElementById("start");
+if(startDate)startEl.value=startDate;
+startEl.addEventListener("change",()=>{startDate=startEl.value||null;LS.set("plates.start",startDate);render()});
+document.getElementById("reshuffle").onclick=()=>{seed=(seed*7+3)%100000;LS.set("plates.seed",seed);PLAN=buildPlan();indexPlan();render()};
+document.getElementById("sTotal").textContent=DATA.length;
+render();
+</script>
+</body>
+</html>
